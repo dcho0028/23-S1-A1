@@ -12,6 +12,7 @@
 - Saksham Nagpal (saksham.nagpal@monash.edu)
 - Alexey Ignatiev (alexey.ignatiev@monash.edu)
 - Brendon Taylor (brendon.taylor@monash.edu)
+- dylan choo 
 
 ## Setup
 
