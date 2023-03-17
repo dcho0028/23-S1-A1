@@ -27,6 +27,14 @@ class Grid:
         self.x = x
         self.y = y
         self.brush_size = Grid.DEFAULT_BRUSH_SIZE
+        self.draw_style = draw_style
+        self.grid = []
+        for i in range(x):
+            row = []
+            for j in range(y):
+                layer_store = LayerStore()
+                row.append(layer_store)
+            self.grid.append(row)
 
     def increase_brush_size(self):
         """
@@ -34,7 +42,7 @@ class Grid:
         if the brush size is already MAX_BRUSH,
         then do nothing.
         """
-        if self.brush_size > Grid.Max_BRUSH:
+        if self.brush_size < Grid.Max_BRUSH:
             self.brush_size += 1
 
     def decrease_brush_size(self):
@@ -50,4 +58,8 @@ class Grid:
         """
         Activate the special affect on all grid squares.
         """
-        raise NotImplementedError()
+        for i in range(self.x):
+            for j in range(self.y):
+                layer = self.grid[i][j].get_top_layer()
+                if layer is not None:
+                    layer.special()
