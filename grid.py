@@ -63,3 +63,6 @@ class Grid:
                 layer = self.grid[i][j].get_top_layer()
                 if layer is not None:
                     layer.special()
+
+    def __getitem__(self, index):
+        return self.grid[index]

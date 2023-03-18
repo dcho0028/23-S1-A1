@@ -56,13 +56,28 @@ class SetLayerStore(LayerStore):
         Returns true if the LayerStore was actually changed.
         """
         if layer != self.layer:
+            self.layer = layer
+            return True
+        return False
 
 
     def get_color(self, start, timestamp, x, y) -> tuple[int, int, int]:
         """
         Returns the colour this square should show, given the current layers.
         """
-        pass
+        if self.layer is None:
+            return start.get_color(timestamp,x,y))
+        color = self.layer.get_color(timestamp,x,y)
+        if self.special_mode:
+            color = tuple(255-c for c in color)
+        """
+            new_color = []
+            for c in color:
+                new_color.append(255 - c)
+            return tuple(new_color)
+        """
+        return color
+
 
 
     def erase(self, layer: Layer) -> bool:
@@ -70,14 +85,17 @@ class SetLayerStore(LayerStore):
         Complete the erase action with this layer
         Returns true if the LayerStore was actually changed.
         """
-        pass
+        if layer != self.layer:
+            self.layer = None
+            return True
+        return False
 
 
     def special(self):
         """
         Special mode. Different for each store implementation.
         """
-        pass
+        self.special_mode = not self.special_mode
 
 class AdditiveLayerStore(LayerStore):
     """
