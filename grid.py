@@ -1,4 +1,5 @@
 from __future__ import annotations
+from layer_store import SetLayerStore
 class Grid:
     DRAW_STYLE_SET = "SET"
     DRAW_STYLE_ADD = "ADD"
@@ -32,7 +33,7 @@ class Grid:
         for i in range(x):
             row = []
             for j in range(y):
-                layer_store = LayerStore()
+                layer_store = SetLayerStore()
                 row.append(layer_store)
             self.grid.append(row)
 
@@ -42,7 +43,7 @@ class Grid:
         if the brush size is already MAX_BRUSH,
         then do nothing.
         """
-        if self.brush_size < Grid.Max_BRUSH:
+        if self.brush_size < Grid.MAX_BRUSH:
             self.brush_size += 1
 
     def decrease_brush_size(self):

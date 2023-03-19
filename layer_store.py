@@ -2,10 +2,12 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from layer_util import Layer
 
+
 class LayerStore(ABC):
 
     def __init__(self) -> None:
         pass
+
 
     @abstractmethod
     def add(self, layer: Layer) -> bool:
@@ -16,7 +18,7 @@ class LayerStore(ABC):
         pass
 
     @abstractmethod
-    def get_color(self, start, timestamp, x, y) -> tuple[int, int, int]:
+    def get_color(self,start, timestamp: int, x: int, y: int) -> tuple[int, int, int]:
         """
         Returns the colour this square should show, given the current layers.
         """
@@ -37,7 +39,10 @@ class LayerStore(ABC):
         """
         pass
 
+
+
 class SetLayerStore(LayerStore):
+
     """
     Set layer store. A single layer can be stored at a time (or nothing at all)
     - add: Set the single layer.
@@ -45,9 +50,12 @@ class SetLayerStore(LayerStore):
     - special: Invert the colour output.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self,) -> None:
+        super().__init__(color=color)
         self.layer = None
+        self.special_mode = False
+
+
 
 
     def add(self, layer: Layer) -> bool:
@@ -61,23 +69,31 @@ class SetLayerStore(LayerStore):
         return False
 
 
-    def get_color(self, start, timestamp, x, y) -> tuple[int, int, int]:
+    def get_color(self, start , timestamp: int , x: int, y: int) -> tuple[int, int, int]:
         """
         Returns the colour this square should show, given the current layers.
-        """
-        if self.layer is None:
-            return start.get_color(timestamp,x,y))
-        color = self.layer.get_color(timestamp,x,y)
-        if self.special_mode:
-            color = tuple(255-c for c in color)
-        """
-            new_color = []
-            for c in color:
-                new_color.append(255 - c)
-            return tuple(new_color)
-        """
-        return color
+        default_color = (255, 255, 255)
 
+
+        if self.layer is None:
+            if isinstance(start, SetLayerStore) and start.layer is not None:
+                return start.layer.get_color(start, timestamp, x, y)
+            else:
+                return default_color  # or any default color
+        else:
+            color = self.layer.get_color(start, timestamp, x, y)
+            if self.special_mode:
+                color = tuple(255 - c for c in color)
+            return color
+
+        """
+
+        if self.layer is None:
+            return self.color
+        color = self.layer.get_color(start, timestamp, x, y)
+        if self.special_mode:
+            color = tuple(255 - c for c in color)
+        return color
 
 
     def erase(self, layer: Layer) -> bool:
@@ -85,17 +101,19 @@ class SetLayerStore(LayerStore):
         Complete the erase action with this layer
         Returns true if the LayerStore was actually changed.
         """
+
         if layer != self.layer:
             self.layer = None
             return True
         return False
 
 
+
     def special(self):
-        """
-        Special mode. Different for each store implementation.
-        """
-        self.special_mode = not self.special_mode
+       """
+       Special mode. Different for each store implementation.
+       """
+       self.special_mode = not self.special_mode
 
 class AdditiveLayerStore(LayerStore):
     """
