@@ -58,10 +58,11 @@ class Grid:
     def special(self):
         """
         Activate the special affect on all grid squares.
+        .get_top_layer()
         """
         for i in range(self.x):
             for j in range(self.y):
-                layer = self.grid[i][j].get_top_layer()
+                layer = self.grid[i][j]
                 if layer is not None:
                     layer.special()
 

@@ -302,7 +302,16 @@ class MyWindow(arcade.Window):
         px: x position of the brush.
         py: y position of the brush.
         """
-        pass
+        # Get the current brush size from the grid
+        brush_size = self.grid[px][py].brush_size
+
+        # Paint all grid squares within d Manhattan distance of (px, py)
+        for x in range(max(px - brush_size, 0), min(px + brush_size + 1, GRID_SIZE_X)):
+            for y in range(max(py - brush_size, 0), min(py + brush_size + 1, GRID_SIZE_Y)):
+                # Check if the grid square is within range
+                if 0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y:
+                    # Apply the layer to the grid square
+                    self.grid[x][y].apply_layer(layer)
 
     def on_undo(self):
         """Called when an undo is requested."""
@@ -314,7 +323,9 @@ class MyWindow(arcade.Window):
 
     def on_special(self):
         """Called when the special action is requested."""
-        pass
+        for x in range(GRID_SIZE_X):
+            for y in range(GRID_SIZE_Y):
+                self.grid[x][y].toggle_special_mode()
 
     def on_replay_start(self):
         """Called when the replay starting is requested."""

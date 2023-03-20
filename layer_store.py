@@ -1,10 +1,13 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from layer_util import Layer
+from layers import *
+
 
 
 class LayerStore(ABC):
 
+    @abstractmethod
     def __init__(self) -> None:
         pass
 
@@ -50,8 +53,8 @@ class SetLayerStore(LayerStore):
     - special: Invert the colour output.
     """
 
-    def __init__(self,) -> None:
-        super().__init__(color=color)
+    def __init__(self) -> None:
+        super().__init__()
         self.layer = None
         self.special_mode = False
 
@@ -69,31 +72,7 @@ class SetLayerStore(LayerStore):
         return False
 
 
-    def get_color(self, start , timestamp: int , x: int, y: int) -> tuple[int, int, int]:
-        """
-        Returns the colour this square should show, given the current layers.
-        default_color = (255, 255, 255)
 
-
-        if self.layer is None:
-            if isinstance(start, SetLayerStore) and start.layer is not None:
-                return start.layer.get_color(start, timestamp, x, y)
-            else:
-                return default_color  # or any default color
-        else:
-            color = self.layer.get_color(start, timestamp, x, y)
-            if self.special_mode:
-                color = tuple(255 - c for c in color)
-            return color
-
-        """
-
-        if self.layer is None:
-            return self.color
-        color = self.layer.get_color(start, timestamp, x, y)
-        if self.special_mode:
-            color = tuple(255 - c for c in color)
-        return color
 
 
     def erase(self, layer: Layer) -> bool:
@@ -114,6 +93,59 @@ class SetLayerStore(LayerStore):
        Special mode. Different for each store implementation.
        """
        self.special_mode = not self.special_mode
+
+
+    def get_color(self, start , timestamp: int , x: int, y: int) -> tuple[int, int, int]:
+        """
+        Returns the colour this square should show, given the current layers.
+
+        if self.layer is None:
+            return start.layer.get_color(timestamp, x, y)
+        color = self.layer.get_color(timestamp, x, y)
+        if self.special_mode:
+            color = tuple(255 - c for c in color)
+        return color
+
+        ///////
+
+        default_color = (255, 255, 255)
+
+
+        if self.layer is None:
+            if isinstance(start, SetLayerStore) and start.layer is not None:
+                return start.layer.get_color(start, timestamp, x, y)
+            else:
+                return default_color  # or any default color
+        else:
+            color = self.layer.get_color(start, timestamp, x, y)
+            if self.special_mode:
+                color = tuple(255 - c for c in color)
+            return color
+
+                    else:
+            return default_color  # or any default color
+            tuple(255 - c for c in color)
+
+        if self.layer is None:
+            return start
+        if callable(self.layer):
+            color = self.layer(start, timestamp, x, y)
+            if self.special_mode:
+                color = tuple(255 - c for c in color)
+            return color
+
+
+        """
+
+
+        if self.layer is None:
+            return start
+        else:
+            color = start
+            if self.special_mode:
+                color = tuple(255 - c for c in color)
+            return color
+
 
 class AdditiveLayerStore(LayerStore):
     """
