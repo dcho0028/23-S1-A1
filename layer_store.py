@@ -1,16 +1,18 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+
+from data_structures.queue_adt import Queue, CircularQueue
 from layer_util import Layer
-from layers import *
+
+
 
 
 
 class LayerStore(ABC):
 
-    @abstractmethod
+
     def __init__(self) -> None:
         pass
-
 
     @abstractmethod
     def add(self, layer: Layer) -> bool:
@@ -44,6 +46,8 @@ class LayerStore(ABC):
 
 
 
+
+
 class SetLayerStore(LayerStore):
 
     """
@@ -57,7 +61,6 @@ class SetLayerStore(LayerStore):
         super().__init__()
         self.layer = None
         self.special_mode = False
-
 
 
 
@@ -79,6 +82,7 @@ class SetLayerStore(LayerStore):
         """
         Complete the erase action with this layer
         Returns true if the LayerStore was actually changed.
+
         """
 
         if layer != self.layer:
@@ -95,67 +99,61 @@ class SetLayerStore(LayerStore):
        self.special_mode = not self.special_mode
 
 
-    def get_color(self, start , timestamp: int , x: int, y: int) -> tuple[int, int, int]:
+
+    def get_color(self, start: tuple[int, int, int], timestamp: int, x: int, y: int) -> tuple[int, int, int]:
         """
         Returns the colour this square should show, given the current layers.
 
-        if self.layer is None:
-            return start.layer.get_color(timestamp, x, y)
-        color = self.layer.get_color(timestamp, x, y)
-        if self.special_mode:
-            color = tuple(255 - c for c in color)
-        return color
-
-        ///////
-
-        default_color = (255, 255, 255)
-
-
-        if self.layer is None:
-            if isinstance(start, SetLayerStore) and start.layer is not None:
-                return start.layer.get_color(start, timestamp, x, y)
-            else:
-                return default_color  # or any default color
-        else:
-            color = self.layer.get_color(start, timestamp, x, y)
-            if self.special_mode:
-                color = tuple(255 - c for c in color)
-            return color
-
-                    else:
-            return default_color  # or any default color
-            tuple(255 - c for c in color)
-
-        if self.layer is None:
-            return start
-        if callable(self.layer):
-            color = self.layer(start, timestamp, x, y)
-            if self.special_mode:
-                color = tuple(255 - c for c in color)
-            return color
-
-
         """
 
-
         if self.layer is None:
             return start
-        else:
-            color = start
+
+        if self.add:
             if self.special_mode:
-                color = tuple(255 - c for c in color)
+                color = tuple(255 - c for c in self.layer.apply(start,timestamp,x,y))
+                return color
+            color = self.layer.apply(start,timestamp,x,y)
             return color
+        else:
+            raise Exception("error")
+
 
 
 class AdditiveLayerStore(LayerStore):
-    """
+     """
     Additive layer store. Each added layer applies after all previous ones.
     - add: Add a new layer to be added last.
     - erase: Remove the first layer that was added. Ignore what is currently selected.
     - special: Reverse the order of current layers (first becomes last, etc.)
     """
 
-    pass
+     def __init__(self) -> None:
+         super().__init__()
+         self.special_mode = False
+         self.layer_list = CircularQueue(max_capacity=100)
+
+
+     def add(self,layer: Layer):
+         self.layer_list.append(layer)
+
+     def erase(self,layer: Layer):
+         self.layer_list.serve()
+
+     def special(self):
+         q_layer_lst = list(self.layer_list.queue)
+         q_layer_lst.reverse()
+         self.layer_list = Queue()
+         for layer in q_layer_lst:
+             self.layer_list.append(layer)
+
+
+     def get_color(self, start: tuple[int, int, int], timestamp: int, x: int, y: int) -> tuple[int, int, int]:
+         pass
+
+
+
+
 
 class SequenceLayerStore(LayerStore):
     """

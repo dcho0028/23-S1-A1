@@ -303,15 +303,21 @@ class MyWindow(arcade.Window):
         py: y position of the brush.
         """
         # Get the current brush size from the grid
-        brush_size = self.grid[px][py].brush_size
+        brush_size = self.grid.brush_size
 
-        # Paint all grid squares within d Manhattan distance of (px, py)
-        for x in range(max(px - brush_size, 0), min(px + brush_size + 1, GRID_SIZE_X)):
-            for y in range(max(py - brush_size, 0), min(py + brush_size + 1, GRID_SIZE_Y)):
-                # Check if the grid square is within range
-                if 0 <= x < GRID_SIZE_X and 0 <= y < GRID_SIZE_Y:
-                    # Apply the layer to the grid square
-                    self.grid[x][y].apply_layer(layer)
+        for i in range(px - brush_size, px + brush_size + 1):
+            if i < 0 or i >= self.grid.x:
+                continue
+            for j in range(py - brush_size, py + brush_size + 1):
+                if j < 0 or j >= self.grid.y:
+                    continue
+                if self.grid.draw_style == Grid.DRAW_STYLE_SET:
+                    self.grid[i][j].erase(layer)
+                    self.grid[i][j].add(layer)
+                elif self.grid.draw_style == Grid.DRAW_STYLE_ADD:
+                    self.grid[i][j].add(layer)
+                elif self.grid.draw_style == Grid.DRAW_STYLE_SEQUENCE:
+                    self.grid[i][j].add(layer)
 
     def on_undo(self):
         """Called when an undo is requested."""
@@ -323,9 +329,18 @@ class MyWindow(arcade.Window):
 
     def on_special(self):
         """Called when the special action is requested."""
-        for x in range(GRID_SIZE_X):
-            for y in range(GRID_SIZE_Y):
-                self.grid[x][y].toggle_special_mode()
+        layer = self.grid.special()
+
+        # Apply the layer to the grid with the special mode enabled
+        for i in range(self.grid.x):
+            for j in range(self.grid.y):
+                if self.grid.draw_style == Grid.DRAW_STYLE_SET:
+                    self.grid[i][j].erase(layer)
+                    self.grid[i][j].add(layer)
+                elif self.grid.draw_style == Grid.DRAW_STYLE_ADD:
+                    self.grid[i][j].add(layer)
+                elif self.grid.draw_style == Grid.DRAW_STYLE_SEQUENCE:
+                    self.grid[i][j].add(layer)
 
     def on_replay_start(self):
         """Called when the replay starting is requested."""
