@@ -2,6 +2,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from data_structures.stack_adt import ArrayStack
 from data_structures.queue_adt import Queue, CircularQueue
+from data_structures.array_sorted_list import ArraySortedList
+from data_structures.sorted_list_adt import ListItem
 from layer_util import Layer
 
 
@@ -214,4 +216,25 @@ class SequenceLayerStore(LayerStore):
         In the event of two layers being the median names, pick the lexicographically smaller one.
     """
 
-    pass
+    def __init__(self) -> None:
+        super().__init__()
+        self.layer_list = ArraySortedList(max_capacity=100)
+
+
+    def add(self, layer: Layer):
+        if layer not in self.layer_list :
+            self.layer_list.add(ListItem(layer.name,layer.index))
+
+    def erase(self, layer: Layer):
+        if layer in self.layer_list:
+            self.layer_list.remove(ListItem(layer.name,layer.index))
+
+    def special(self):
+        if len(self.layer_list) == 0:
+            pass
+
+
+    def get_color(self, start: tuple[int, int, int], timestamp: int, x: int, y: int) -> tuple[int, int, int]:
+        if self.layer_list.is_empty():
+            return start
+
