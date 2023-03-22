@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-
+from data_structures.stack_adt import ArrayStack
 from data_structures.queue_adt import Queue, CircularQueue
 from layer_util import Layer
 
@@ -61,6 +61,7 @@ class SetLayerStore(LayerStore):
         super().__init__()
         self.layer = None
         self.special_mode = False
+        self.color = (0,0,0)
 
 
 
@@ -95,6 +96,9 @@ class SetLayerStore(LayerStore):
     def special(self):
        """
        Special mode. Different for each store implementation.
+              if self.special_mode:
+           self.color = (255 - self.color[0], 255 - self.color[1], 255 - self.color[2])
+
        """
        self.special_mode = not self.special_mode
 
@@ -110,11 +114,11 @@ class SetLayerStore(LayerStore):
             return start
 
         if self.add:
+            self.color = self.layer.apply(start, timestamp, x, y)
             if self.special_mode:
-                color = tuple(255 - c for c in self.layer.apply(start,timestamp,x,y))
-                return color
-            color = self.layer.apply(start,timestamp,x,y)
-            return color
+                self.color = tuple(255 - c for c in self.layer.apply(start,timestamp,x,y))
+            start = self.color
+            return self.color
         else:
             raise Exception("error")
 
@@ -131,7 +135,9 @@ class AdditiveLayerStore(LayerStore):
      def __init__(self) -> None:
          super().__init__()
          self.special_mode = False
+         self.color = (0,0,0)
          self.layer_list = CircularQueue(max_capacity=100)
+         self.stack_layer_list = ArrayStack(max_capacity=100)
 
 
      def add(self,layer: Layer):
@@ -141,15 +147,58 @@ class AdditiveLayerStore(LayerStore):
          self.layer_list.serve()
 
      def special(self):
-         q_layer_lst = list(self.layer_list.queue)
-         q_layer_lst.reverse()
-         self.layer_list = Queue()
-         for layer in q_layer_lst:
-             self.layer_list.append(layer)
+         temp_q = CircularQueue(max_capacity=100)
+         temp_stack = ArrayStack(max_capacity=100)
+         while not self.layer_list.is_empty():
+             temp_stack.push(self.layer_list.serve())
+         while not temp_stack.is_empty():
+             temp_q.append(temp_stack.pop())
+             self.layer_list.append(temp_q.serve())
+
+
 
 
      def get_color(self, start: tuple[int, int, int], timestamp: int, x: int, y: int) -> tuple[int, int, int]:
-         pass
+         """
+             while not self.layer_list.is_empty():
+                 if self.special_mode:
+                     color = tuple(255 - c for c in self.layer_list.serve().apply(start, timestamp, x, y))
+                     return color
+                 color = self.layer_list.serve().apply(start, timestamp, x, y)
+             return color
+         else:
+             raise Exception("error")
+
+
+
+        """
+
+         if self.layer_list.is_empty():
+             return start
+         if not self.layer_list.is_empty():
+             temporary_q = CircularQueue(max_capacity = 100)
+             while not self.layer_list.is_empty():
+                 layer_serve = self.layer_list.serve()
+                 temporary_q.append(layer_serve)
+                 self.color = layer_serve.apply(start, timestamp, x, y)
+                 start = self.color
+                 if self.special_mode:
+                     while not self.layer_list.special().is_empty():
+                         temporary_q_special = CircularQueue(max_capacity=100)
+                         layer_serve_special = self.layer_list.special().serve()
+                         temporary_q_special.append(layer_serve_special)
+                         self.color = layer_serve_special.apply(start, timestamp, x, y)
+                         start = self.color
+                     self.layer_list = temporary_q_special
+                     return self.color
+             self.layer_list = temporary_q
+             return self.color
+         else:
+             raise Exception("error")
+
+
+
+
 
 
 
