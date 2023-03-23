@@ -119,7 +119,6 @@ class SetLayerStore(LayerStore):
             self.color = self.layer.apply(start, timestamp, x, y)
             if self.special_mode:
                 self.color = tuple(255 - c for c in self.layer.apply(start,timestamp,x,y))
-            start = self.color
             return self.color
         else:
             raise Exception("error")
@@ -223,6 +222,7 @@ class SequenceLayerStore(LayerStore):
         self.special_mode = False
 
 
+
     def add(self, layer: Layer):
         if layer not in self.layer_list :
             self.layer_list.add(ListItem(layer.name,layer.index))
@@ -251,13 +251,18 @@ class SequenceLayerStore(LayerStore):
     def get_color(self, start: tuple[int, int, int], timestamp: int, x: int, y: int) -> tuple[int, int, int]:
         if self.layer_list.is_empty():
             return start
+
         if not self.layer_list.is_empty():
-            for layer in self.layer_list:
-                # get name of the list item
-                self.color = layer.apply(start,timestamp,x,y)
-                if self.special_mode:
-                    self.layer_list.special()
+            for layer_sort in self.layer_list:
+                name_layer = layer_sort.value
+                self.color = name_layer.apply(start,timestamp,x,y)
                 start = self.color
+                if self.special_mode:
+                    for layer_sort in self.layer_list.special():
+                        name_layer = layer_sort.self.value.layer
+                        self.color =name_layer.apply(start, timestamp, x, y)
+                        start = self.color
+                    return self.color
             return self.color
         else:
             raise Exception("error")
