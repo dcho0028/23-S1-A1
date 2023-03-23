@@ -219,6 +219,8 @@ class SequenceLayerStore(LayerStore):
     def __init__(self) -> None:
         super().__init__()
         self.layer_list = ArraySortedList(max_capacity=100)
+        self.color = (0,0,0)
+        self.special_mode = False
 
 
     def add(self, layer: Layer):
@@ -230,11 +232,35 @@ class SequenceLayerStore(LayerStore):
             self.layer_list.remove(ListItem(layer.name,layer.index))
 
     def special(self):
-        if len(self.layer_list) == 0:
-            pass
+        apply_layers = [item for item in self.layer_list if item.value.add]
 
+        if not apply_layers:
+
+            return
+
+        if len(apply_layers) % 2 == 0:
+            apply_layers = sorted(apply_layers, key=lambda x: x.value.name)
+            median_index = len(apply_layers) // 2 - 1
+            median_layer = apply_layers[median_index]
+            self.layer_list.remove(median_layer)
+        else:
+            median_index = len(apply_layers) // 2
+            median_layer = apply_layers[median_index]
+            self.layer_list.remove(median_layer)
 
     def get_color(self, start: tuple[int, int, int], timestamp: int, x: int, y: int) -> tuple[int, int, int]:
         if self.layer_list.is_empty():
             return start
+        if not self.layer_list.is_empty():
+            for layer in self.layer_list:
+                # get name of the list item
+                self.color = layer.apply(start,timestamp,x,y)
+                if self.special_mode:
+                    self.layer_list.special()
+                start = self.color
+            return self.color
+        else:
+            raise Exception("error")
+
+
 
