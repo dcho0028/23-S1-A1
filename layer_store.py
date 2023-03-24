@@ -1,13 +1,12 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+
+import layer_util
 from data_structures.stack_adt import ArrayStack
-from data_structures.queue_adt import Queue, CircularQueue
+from data_structures.queue_adt import CircularQueue
 from data_structures.array_sorted_list import ArraySortedList
 from data_structures.sorted_list_adt import ListItem
 from layer_util import Layer
-
-
-
 
 
 class LayerStore(ABC):
@@ -223,24 +222,45 @@ class SequenceLayerStore(LayerStore):
 
 
 
+
+
     def add(self, layer: Layer):
-        if layer not in self.layer_list :
-            self.layer_list.add(ListItem(layer.name,layer.index))
+        for layer_add in self.layer_list:
+            if layer_add is None:
+                self.layer_list.add(ListItem(layer.name, layer.index))
+                break
+            if layer_add.value == layer.name and layer_add.key == layer.index:
+                return
+
 
     def erase(self, layer: Layer):
-        if layer in self.layer_list:
-            self.layer_list.remove(ListItem(layer.name,layer.index))
+        """
+        for layer_erase in self.layer_list:
+            if layer_erase is None:
+                break
+            if layer_erase.value == layer.name and layer_erase.key == layer.index:
+                self.layer_list.remove(ListItem(layer_erase.value, layer_erase.key))
+                break
+
+        """
+        for layer_erase in self.layer_list:
+            if layer_erase is None:
+                break
+            if layer_erase.value == layer.name and layer_erase.key == layer.index:
+                self.layer_list.remove(ListItem(layer_erase.value, layer_erase.key))
+                break
+
 
     def special(self):
-        apply_layers = [item for item in self.layer_list if item.value.add]
+        apply_layers = [item for item in self.layer_list if item is not None and item.value]
 
         if not apply_layers:
 
             return
 
         if len(apply_layers) % 2 == 0:
-            apply_layers = sorted(apply_layers, key=lambda x: x.value.name)
-            median_index = len(apply_layers) // 2 - 1
+            apply_layers = sorted(apply_layers, key=lambda x: x.value)
+            median_index = (len(apply_layers) // 2) - 1
             median_layer = apply_layers[median_index]
             self.layer_list.remove(median_layer)
         else:
@@ -249,23 +269,40 @@ class SequenceLayerStore(LayerStore):
             self.layer_list.remove(median_layer)
 
     def get_color(self, start: tuple[int, int, int], timestamp: int, x: int, y: int) -> tuple[int, int, int]:
+        """
+
+
+        """
+
+
         if self.layer_list.is_empty():
             return start
 
         if not self.layer_list.is_empty():
             for layer_sort in self.layer_list:
+                if layer_sort is None:
+                    break
                 name_layer = layer_sort.value
-                self.color = name_layer.apply(start,timestamp,x,y)
-                start = self.color
+                for layer in layer_util.LAYERS:
+                    if layer.name == name_layer:
+                         self.color = layer.apply(start, timestamp, x, y)
+                         start = self.color
+                         break
                 if self.special_mode:
-                    for layer_sort in self.layer_list.special():
-                        name_layer = layer_sort.self.value.layer
-                        self.color =name_layer.apply(start, timestamp, x, y)
-                        start = self.color
+                    for layer_sort_special in self.layer_list.special():
+                        if layer_sort_special is None:
+                            break
+                        name_layer_special = layer_sort_special.value
+                        for layer_special in layer_util.LAYERS:
+                            if layer_special.name == name_layer_special:
+                                self.color = layer_special.apply(start, timestamp, x, y)
+                                start = self.color
+                                break
                     return self.color
             return self.color
         else:
             raise Exception("error")
+
 
 
 
