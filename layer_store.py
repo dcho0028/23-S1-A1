@@ -235,19 +235,23 @@ class SequenceLayerStore(LayerStore):
 
     def erase(self, layer: Layer):
         """
-        for layer_erase in self.layer_list:
+                for layer_erase in self.layer_list:
             if layer_erase is None:
                 break
             if layer_erase.value == layer.name and layer_erase.key == layer.index:
-                self.layer_list.remove(ListItem(layer_erase.value, layer_erase.key))
+                self.layer_list.remove(layer_erase)
+                self.layer_list.delete_at_index()
                 break
 
+
+
         """
-        for layer_erase in self.layer_list:
-            if layer_erase is None:
+        for i in range(len(self.layer_list)):
+            if self.layer_list[i] is None:
                 break
-            if layer_erase.value == layer.name and layer_erase.key == layer.index:
-                self.layer_list.remove(ListItem(layer_erase.value, layer_erase.key))
+            if self.layer_list[i].value == layer.name and self.layer_list[i].key == layer.index:
+                self.layer_list.delete_at_index(i)
+                self.layer_list._resize()
                 break
 
 
@@ -261,21 +265,31 @@ class SequenceLayerStore(LayerStore):
         if len(apply_layers) % 2 == 0:
             apply_layers = sorted(apply_layers, key=lambda x: x.value)
             median_index = (len(apply_layers) // 2) - 1
-            median_layer = apply_layers[median_index]
-            self.layer_list.remove(median_layer)
+            median_layer_to_remove = apply_layers[median_index]
+            if not self.layer_list.is_empty():
+                for layer_sort in self.layer_list:
+                    if layer_sort is None:
+                        break
+                    name_layer = layer_sort.value
+                    if median_layer_to_remove == name_layer:
+                        self.erase(layer_sort)
+                        break
         else:
             median_index = len(apply_layers) // 2
-            median_layer = apply_layers[median_index]
-            self.layer_list.remove(median_layer)
+            median_layer_to_remove = apply_layers[median_index]
+            if not self.layer_list.is_empty():
+                for layer_sort in self.layer_list:
+                    if layer_sort is None:
+                        break
+                    name_layer = layer_sort.value
+                    if median_layer_to_remove == name_layer:
+                        self.erase(layer_sort)
+                        break
+
 
     def get_color(self, start: tuple[int, int, int], timestamp: int, x: int, y: int) -> tuple[int, int, int]:
         """
-
-
-        """
-
-
-        if self.layer_list.is_empty():
+                if self.layer_list.is_empty():
             return start
 
         if not self.layer_list.is_empty():
@@ -302,6 +316,37 @@ class SequenceLayerStore(LayerStore):
             return self.color
         else:
             raise Exception("error")
+
+
+        """
+
+
+        if self.layer_list.is_empty():
+            return start
+
+
+        for layer_sort in self.layer_list:
+            if layer_sort is None:
+                break
+            name_layer = layer_sort.value
+            for layer in layer_util.LAYERS:
+                if layer.name == name_layer:
+                     self.color = layer.apply(start, timestamp, x, y)
+                     start = self.color
+                     break
+            if self.special_mode:
+                for layer_sort_special in self.layer_list.special():
+                    if layer_sort_special is None:
+                        break
+                    name_layer_special = layer_sort_special.value
+                    for layer_special in layer_util.LAYERS:
+                        if layer_special.name == name_layer_special:
+                            self.color = layer_special.apply(start, timestamp, x, y)
+                            start = self.color
+                            break
+                return self.color
+        return self.color
+
 
 
 
