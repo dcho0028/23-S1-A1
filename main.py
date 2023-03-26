@@ -1,9 +1,13 @@
 import arcade
 import arcade.key as keys
 import math
+
+from action import PaintAction
 from grid import Grid
 from layer_util import get_layers, Layer
 from layers import lighten
+from undo import UndoTracker
+
 
 class MyWindow(arcade.Window):
     """ Painter Window """
@@ -302,6 +306,7 @@ class MyWindow(arcade.Window):
         px: x position of the brush.
         py: y position of the brush.
         """
+
         # Get the current brush size from the grid
         brush_size = self.grid.brush_size
 
@@ -318,14 +323,22 @@ class MyWindow(arcade.Window):
                     self.grid[i][j].add(layer)
                 elif self.grid.draw_style == Grid.DRAW_STYLE_SEQUENCE:
                     self.grid[i][j].add(layer)
+        #action = PaintAction(layer, px, py,brush_size)
+        #self.undo_tracker.add_action(action)
+
 
     def on_undo(self):
         """Called when an undo is requested."""
-        pass
+        action = self.undo_tracker.undo(self.grid)
+        if action is not None:
+            return action
+
 
     def on_redo(self):
         """Called when a redo is requested."""
-        pass
+        action = self.undo_tracker.redo(self.grid)
+        if action is not None:
+            return action
 
     def on_special(self):
         """Called when the special action is requested."""
@@ -341,6 +354,7 @@ class MyWindow(arcade.Window):
                     self.grid[i][j].add(layer)
                 elif self.grid.draw_style == Grid.DRAW_STYLE_SEQUENCE:
                     self.grid[i][j].add(layer)
+
 
     def on_replay_start(self):
         """Called when the replay starting is requested."""

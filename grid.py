@@ -32,9 +32,9 @@ class Grid:
         self.brush_size = Grid.DEFAULT_BRUSH_SIZE
         self.draw_style = draw_style
         self.grid = []
-        for i in range(x):
+        for i in range(self.x):
             row = []
-            for j in range(y):
+            for j in range(self.y):
                 if draw_style == Grid.DRAW_STYLE_SET:
                     layer_store = SetLayerStore()
                 elif draw_style == Grid.DRAW_STYLE_ADD:
