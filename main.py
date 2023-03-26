@@ -2,7 +2,7 @@ import arcade
 import arcade.key as keys
 import math
 
-from action import PaintAction
+from action import PaintAction, PaintStep
 from grid import Grid
 from layer_util import get_layers, Layer
 from layers import lighten
@@ -291,7 +291,7 @@ class MyWindow(arcade.Window):
 
     def on_init(self):
         """Initialisation that occurs after the system initialisation."""
-        pass
+        self.undo_tracker = UndoTracker()
 
     def on_reset(self):
         """Called when a window reset is requested."""
@@ -305,10 +305,17 @@ class MyWindow(arcade.Window):
         layer: The layer being applied.
         px: x position of the brush.
         py: y position of the brush.
+
+
+        action = PaintAction(layer, px, py,brush_size)
+        #self.undo_tracker.add_action(action)
+
         """
+
 
         # Get the current brush size from the grid
         brush_size = self.grid.brush_size
+        self.current_action = PaintAction()
 
         for i in range(px - brush_size, px + brush_size + 1):
             if i < 0 or i >= self.grid.x:
@@ -323,8 +330,12 @@ class MyWindow(arcade.Window):
                     self.grid[i][j].add(layer)
                 elif self.grid.draw_style == Grid.DRAW_STYLE_SEQUENCE:
                     self.grid[i][j].add(layer)
-        #action = PaintAction(layer, px, py,brush_size)
-        #self.undo_tracker.add_action(action)
+
+                step = PaintStep((i,j),layer)
+                self.current_action.add_step(step)
+
+        self.undo_tracker.add_action(self.current_action)
+
 
 
     def on_undo(self):
@@ -354,6 +365,7 @@ class MyWindow(arcade.Window):
                     self.grid[i][j].add(layer)
                 elif self.grid.draw_style == Grid.DRAW_STYLE_SEQUENCE:
                     self.grid[i][j].add(layer)
+
 
 
     def on_replay_start(self):

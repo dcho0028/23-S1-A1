@@ -62,7 +62,7 @@ class SetLayerStore(LayerStore):
         super().__init__()
         self.layer = None
         self.special_mode = False
-        self.color = (0,0,0)
+
 
 
 
@@ -111,14 +111,15 @@ class SetLayerStore(LayerStore):
 
         if self.layer is None:
             return start
-
-        if self.add:
+        if self.layer is not None:
             self.color = self.layer.apply(start, timestamp, x, y)
             if self.special_mode:
-                self.color = tuple(255 - c for c in self.layer.apply(start,timestamp,x,y))
+                self.color = tuple(255 - c for c in self.layer.apply(start, timestamp, x, y))
             return self.color
         else:
             raise Exception("error")
+
+
 
 
 
@@ -169,9 +170,9 @@ class AdditiveLayerStore(LayerStore):
          else:
              raise Exception("error")
 
+         """
 
 
-        """
 
          if self.layer_list.is_empty():
              return start

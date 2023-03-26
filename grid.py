@@ -46,6 +46,7 @@ class Grid:
                 row.append(layer_store)
             self.grid.append(row)
 
+
     def increase_brush_size(self):
         """
         Increases the size of the brush by 1,
