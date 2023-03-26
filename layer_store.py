@@ -5,7 +5,7 @@ import layer_util
 from data_structures.stack_adt import ArrayStack
 from data_structures.queue_adt import CircularQueue
 from data_structures.array_sorted_list import ArraySortedList
-from data_structures.sorted_list_adt import ListItem
+from data_structures.sorted_list_adt import ListItem, SortedList
 from layer_util import Layer
 
 
@@ -97,8 +97,6 @@ class SetLayerStore(LayerStore):
     def special(self):
        """
        Special mode. Different for each store implementation.
-              if self.special_mode:
-           self.color = (255 - self.color[0], 255 - self.color[1], 255 - self.color[2])
 
        """
        self.special_mode = not self.special_mode
@@ -141,6 +139,8 @@ class AdditiveLayerStore(LayerStore):
 
 
      def add(self,layer: Layer):
+         if layer == None:
+             return
          self.layer_list.append(layer)
 
      def erase(self,layer: Layer):
@@ -179,6 +179,8 @@ class AdditiveLayerStore(LayerStore):
              temporary_q = CircularQueue(max_capacity = 100)
              while not self.layer_list.is_empty():
                  layer_serve = self.layer_list.serve()
+                 if layer_serve == None:
+                     return
                  temporary_q.append(layer_serve)
                  self.color = layer_serve.apply(start, timestamp, x, y)
                  start = self.color
@@ -217,18 +219,23 @@ class SequenceLayerStore(LayerStore):
     def __init__(self) -> None:
         super().__init__()
         self.layer_list = ArraySortedList(max_capacity=100)
+        self.layer_list_special = ArraySortedList(max_capacity=100)
         self.color = (0,0,0)
         self.special_mode = False
+        self.enter_special = 0
 
 
 
 
 
     def add(self, layer: Layer):
+        if layer == None:
+            return
         for layer_add in self.layer_list:
             if layer_add is None:
                 self.layer_list.add(ListItem(layer.name, layer.index))
                 break
+
             if layer_add.value == layer.name and layer_add.key == layer.index:
                 return
 
@@ -256,75 +263,44 @@ class SequenceLayerStore(LayerStore):
 
 
     def special(self):
-        apply_layers = [item for item in self.layer_list if item is not None and item.value]
+        """
 
-        if not apply_layers:
+        """
 
-            return
 
-        if len(apply_layers) % 2 == 0:
-            apply_layers = sorted(apply_layers, key=lambda x: x.value)
-            median_index = (len(apply_layers) // 2) - 1
-            median_layer_to_remove = apply_layers[median_index]
-            if not self.layer_list.is_empty():
-                for layer_sort in self.layer_list:
-                    if layer_sort is None:
-                        break
-                    name_layer = layer_sort.value
-                    if median_layer_to_remove == name_layer:
-                        self.erase(layer_sort)
-                        break
+
+        apply_layers = len(self.layer_list)
+
+        if apply_layers % 2 == 0:
+            median_index = (apply_layers // 2) - 1
+            temp_layer_list = [x for x in self.layer_list if x is not None]
+            sort_layer_name = sorted(temp_layer_list, key=lambda x: x.value)
+            for j in self.layer_list:
+                if j is not None and j.value == sort_layer_name[median_index].value:
+                    self.layer_list.remove(j)
+                    self.layer_list._resize()
+                    break
+
+
         else:
-            median_index = len(apply_layers) // 2
-            median_layer_to_remove = apply_layers[median_index]
-            if not self.layer_list.is_empty():
-                for layer_sort in self.layer_list:
-                    if layer_sort is None:
-                        break
-                    name_layer = layer_sort.value
-                    if median_layer_to_remove == name_layer:
-                        self.erase(layer_sort)
-                        break
+            median_index = apply_layers // 2
+            temp_layer_list = [x for x in self.layer_list if x is not None]
+            sort_layer_name = sorted(temp_layer_list, key=lambda x: x.value)
+            for j in self.layer_list:
+                if j is not None and j.value == sort_layer_name[median_index].value:
+                    self.layer_list.remove(j)
+                    self.layer_list._resize()
+                    break
 
 
     def get_color(self, start: tuple[int, int, int], timestamp: int, x: int, y: int) -> tuple[int, int, int]:
         """
-                if self.layer_list.is_empty():
-            return start
-
-        if not self.layer_list.is_empty():
-            for layer_sort in self.layer_list:
-                if layer_sort is None:
-                    break
-                name_layer = layer_sort.value
-                for layer in layer_util.LAYERS:
-                    if layer.name == name_layer:
-                         self.color = layer.apply(start, timestamp, x, y)
-                         start = self.color
-                         break
-                if self.special_mode:
-                    for layer_sort_special in self.layer_list.special():
-                        if layer_sort_special is None:
-                            break
-                        name_layer_special = layer_sort_special.value
-                        for layer_special in layer_util.LAYERS:
-                            if layer_special.name == name_layer_special:
-                                self.color = layer_special.apply(start, timestamp, x, y)
-                                start = self.color
-                                break
-                    return self.color
-            return self.color
-        else:
-            raise Exception("error")
-
 
         """
 
 
         if self.layer_list.is_empty():
             return start
-
-
         for layer_sort in self.layer_list:
             if layer_sort is None:
                 break
@@ -334,17 +310,6 @@ class SequenceLayerStore(LayerStore):
                      self.color = layer.apply(start, timestamp, x, y)
                      start = self.color
                      break
-            if self.special_mode:
-                for layer_sort_special in self.layer_list.special():
-                    if layer_sort_special is None:
-                        break
-                    name_layer_special = layer_sort_special.value
-                    for layer_special in layer_util.LAYERS:
-                        if layer_special.name == name_layer_special:
-                            self.color = layer_special.apply(start, timestamp, x, y)
-                            start = self.color
-                            break
-                return self.color
         return self.color
 
 

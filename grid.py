@@ -1,5 +1,7 @@
 from __future__ import annotations
-from layer_store import SetLayerStore
+from layer_store import SetLayerStore, AdditiveLayerStore , SequenceLayerStore
+
+
 class Grid:
     DRAW_STYLE_SET = "SET"
     DRAW_STYLE_ADD = "ADD"
@@ -33,7 +35,14 @@ class Grid:
         for i in range(x):
             row = []
             for j in range(y):
-                layer_store = SetLayerStore()
+                if draw_style == Grid.DRAW_STYLE_SET:
+                    layer_store = SetLayerStore()
+                elif draw_style == Grid.DRAW_STYLE_ADD:
+                    layer_store = AdditiveLayerStore()
+                elif draw_style == Grid.DRAW_STYLE_SEQUENCE:
+                    layer_store = SequenceLayerStore()
+                else:
+                    raise ValueError(f"Invalid draw_style: {draw_style}")
                 row.append(layer_store)
             self.grid.append(row)
 
