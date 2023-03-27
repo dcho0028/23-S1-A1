@@ -309,13 +309,7 @@ class MyWindow(arcade.Window):
         py: y position of the brush.
 
 
-        action = PaintAction(layer, px, py,brush_size)
-        #self.undo_tracker.add_action(action)
-
-        """
-
-
-        # Get the current brush size from the grid
+                # Get the current brush size from the grid
         brush_size = self.grid.brush_size
         self.current_action = PaintAction()
 
@@ -337,6 +331,33 @@ class MyWindow(arcade.Window):
                 self.current_action.add_step(step)
 
         self.undo_tracker.add_action(self.current_action)
+
+        """
+
+        brush_size = self.grid.brush_size
+        self.current_action = PaintAction()
+
+        for i in range(px - brush_size, px + brush_size + 1):
+            if i < 0 or i >= self.grid.x:
+                continue
+            for j in range(py - brush_size, py + brush_size + 1):
+                if j < 0 or j >= self.grid.y:
+                    continue
+                distance = abs(i - px) + abs(j - py)
+                if distance <= brush_size:
+                    if self.grid.draw_style == Grid.DRAW_STYLE_SET:
+                        self.grid[i][j].erase(layer)
+                        self.grid[i][j].add(layer)
+                    elif self.grid.draw_style == Grid.DRAW_STYLE_ADD:
+                        self.grid[i][j].add(layer)
+                    elif self.grid.draw_style == Grid.DRAW_STYLE_SEQUENCE:
+                        self.grid[i][j].add(layer)
+
+                    step = PaintStep((i, j), layer)
+                    self.current_action.add_step(step)
+
+        self.undo_tracker.add_action(self.current_action)
+
 
 
 
