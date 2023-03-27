@@ -5,7 +5,7 @@ import layer_util
 from data_structures.stack_adt import ArrayStack
 from data_structures.queue_adt import CircularQueue
 from data_structures.array_sorted_list import ArraySortedList
-from data_structures.sorted_list_adt import ListItem, SortedList
+from data_structures.sorted_list_adt import ListItem
 from layer_util import Layer
 
 
@@ -71,7 +71,7 @@ class SetLayerStore(LayerStore):
         Add a layer to the store.
         Returns true if the LayerStore was actually changed.
         """
-        if layer != self.layer:
+        if layer is not self.layer:
             self.layer = layer
             return True
         return False
@@ -87,7 +87,7 @@ class SetLayerStore(LayerStore):
 
         """
 
-        if layer != self.layer:
+        if layer is not self.layer:
             self.layer = None
             return True
         return False
@@ -106,7 +106,8 @@ class SetLayerStore(LayerStore):
     def get_color(self, start: tuple[int, int, int], timestamp: int, x: int, y: int) -> tuple[int, int, int]:
         """
         Returns the colour this square should show, given the current layers.
-
+        else:
+            raise Exception("error")
         """
 
         if self.layer is None:
@@ -116,8 +117,7 @@ class SetLayerStore(LayerStore):
             if self.special_mode:
                 self.color = tuple(255 - c for c in self.layer.apply(start, timestamp, x, y))
             return self.color
-        else:
-            raise Exception("error")
+
 
 
 
@@ -141,11 +141,15 @@ class AdditiveLayerStore(LayerStore):
 
      def add(self,layer: Layer):
          if layer == None:
-             return
+             return False
          self.layer_list.append(layer)
+         return True
 
      def erase(self,layer: Layer):
+         if self.layer_list.is_empty():
+             return False
          self.layer_list.serve()
+         return True
 
      def special(self):
          temp_q = CircularQueue(max_capacity=100)
@@ -161,20 +165,7 @@ class AdditiveLayerStore(LayerStore):
 
      def get_color(self, start: tuple[int, int, int], timestamp: int, x: int, y: int) -> tuple[int, int, int]:
          """
-             while not self.layer_list.is_empty():
-                 if self.special_mode:
-                     color = tuple(255 - c for c in self.layer_list.serve().apply(start, timestamp, x, y))
-                     return color
-                 color = self.layer_list.serve().apply(start, timestamp, x, y)
-             return color
-         else:
-             raise Exception("error")
-
-         """
-
-
-
-         if self.layer_list.is_empty():
+        if self.layer_list.is_empty():
              return start
          if not self.layer_list.is_empty():
              temporary_q = CircularQueue(max_capacity = 100)
@@ -198,6 +189,33 @@ class AdditiveLayerStore(LayerStore):
              return self.color
          else:
              raise Exception("error")
+
+         """
+
+
+         self.color = start
+         if self.layer_list.is_empty():
+             return self.color
+         if not self.layer_list.is_empty():
+             temporary_q = CircularQueue(max_capacity = 100)
+             while not self.layer_list.is_empty():
+                 layer_serve = self.layer_list.serve()
+                 if layer_serve == None:
+                     return
+                 temporary_q.append(layer_serve)
+                 self.color = layer_serve.apply(self.color, timestamp, x, y)
+                 if self.special_mode:
+                     self.color = start
+                     while not self.layer_list.special().is_empty():
+                         temporary_q_special = CircularQueue(max_capacity=100)
+                         layer_serve_special = self.layer_list.special().serve()
+                         temporary_q_special.append(layer_serve_special)
+                         self.color = layer_serve_special.apply(self.color, timestamp, x, y)
+                     self.layer_list = temporary_q_special
+                     return self.color
+             self.layer_list = temporary_q
+             return self.color
+
 
 
 

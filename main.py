@@ -6,6 +6,7 @@ from action import PaintAction, PaintStep
 from grid import Grid
 from layer_util import get_layers, Layer
 from layers import lighten
+from replay import ReplayTracker
 from undo import UndoTracker
 
 
@@ -292,6 +293,7 @@ class MyWindow(arcade.Window):
     def on_init(self):
         """Initialisation that occurs after the system initialisation."""
         self.undo_tracker = UndoTracker()
+        self.replay_tracker = ReplayTracker()
 
     def on_reset(self):
         """Called when a window reset is requested."""
@@ -354,6 +356,7 @@ class MyWindow(arcade.Window):
     def on_special(self):
         """Called when the special action is requested."""
         layer = self.grid.special()
+        self.current_action = PaintAction()
 
         # Apply the layer to the grid with the special mode enabled
         for i in range(self.grid.x):
@@ -366,18 +369,26 @@ class MyWindow(arcade.Window):
                 elif self.grid.draw_style == Grid.DRAW_STYLE_SEQUENCE:
                     self.grid[i][j].add(layer)
 
+                step = PaintStep((i, j), layer)
+                self.current_action.add_step(step)
+
+
+        self.undo_tracker.add_action(self.current_action)
 
 
     def on_replay_start(self):
         """Called when the replay starting is requested."""
-        pass
+        self.replay_tracker.start_replay()
 
     def on_replay_next_step(self) -> bool:
         """
         Called when the next step of the replay is requested.
         Returns whether the replay is finished.
         """
-        return True
+        if self.replay_tracker.play_next_action(self.grid):
+            self.replay_tracker.start_replay()
+            return True
+        return False
 
     def on_increase_brush_size(self):
         """Called when an increase to the brush size is requested."""
