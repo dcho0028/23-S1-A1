@@ -309,28 +309,6 @@ class MyWindow(arcade.Window):
         py: y position of the brush.
 
 
-                # Get the current brush size from the grid
-        brush_size = self.grid.brush_size
-        self.current_action = PaintAction()
-
-        for i in range(px - brush_size, px + brush_size + 1):
-            if i < 0 or i >= self.grid.x:
-                continue
-            for j in range(py - brush_size, py + brush_size + 1):
-                if j < 0 or j >= self.grid.y:
-                    continue
-                if self.grid.draw_style == Grid.DRAW_STYLE_SET:
-                    self.grid[i][j].erase(layer)
-                    self.grid[i][j].add(layer)
-                elif self.grid.draw_style == Grid.DRAW_STYLE_ADD:
-                    self.grid[i][j].add(layer)
-                elif self.grid.draw_style == Grid.DRAW_STYLE_SEQUENCE:
-                    self.grid[i][j].add(layer)
-
-                step = PaintStep((i,j),layer)
-                self.current_action.add_step(step)
-
-        self.undo_tracker.add_action(self.current_action)
 
         """
 
@@ -356,7 +334,9 @@ class MyWindow(arcade.Window):
                     step = PaintStep((i, j), layer)
                     self.current_action.add_step(step)
 
+
         self.undo_tracker.add_action(self.current_action)
+        self.replay_tracker.add_action(self.current_action)
 
 
 
@@ -395,11 +375,15 @@ class MyWindow(arcade.Window):
 
 
         self.undo_tracker.add_action(self.current_action)
+        self.replay_tracker.add_action(self.current_action)
+
 
 
     def on_replay_start(self):
         """Called when the replay starting is requested."""
+
         self.replay_tracker.start_replay()
+
 
     def on_replay_next_step(self) -> bool:
         """
