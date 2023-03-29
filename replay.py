@@ -7,7 +7,12 @@ from data_structures.queue_adt import CircularQueue
 class ReplayTracker:
 
     def __init__(self):
-        self.actions = CircularQueue(max_capacity=1000000)
+        """
+        Doc:
+        set the queue into self.actions and the self.is_replay to false
+
+        """
+        self.actions = CircularQueue(max_capacity=1000)
         self.is_replay = False
         self.replay_started = False
 
@@ -18,6 +23,15 @@ class ReplayTracker:
         Called whenever we should stop taking actions, and start playing them back.
 
         Useful if you have any setup to do before `play_next_action` should be called.
+
+        Doc:
+        set the self.is_replay to true and to check if the self.replay is true or
+        not if its true clear the queue
+
+        time complexity:
+        O(1) its a simple increment
+
+
         """
         self.is_replay = True
         if self.replay_started:
@@ -33,9 +47,12 @@ class ReplayTracker:
 
         `is_undo` specifies whether the action was an undo action or not.
         Special, Redo, and Draw all have this is False.
+
+        Doc:
+        append the action and is_undo value
         """
-        if not self.is_replay:
-            self.actions.append((action,is_undo))
+        #if not self.is_replay:
+        self.actions.append((action,is_undo))
 
 
 
@@ -45,6 +62,14 @@ class ReplayTracker:
         Returns a boolean.
             - If there were no more actions to play, and so nothing happened, return True.
             - Otherwise, return False.
+
+        Doc:
+        to check if the queue is empty or not if its empty it means that the replay
+        has ended and return true if not empty then it will serve the action and undo
+        seperately and it will undo or redo the grid layers and return false
+
+        time complexity:
+        O(1)
         """
 
         if self.actions.is_empty():

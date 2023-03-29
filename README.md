@@ -8,11 +8,7 @@
 
 ## Group Members
 
-- Jackson Goerner (jackson.goerner@monash.edu)
-- Saksham Nagpal (saksham.nagpal@monash.edu)
-- Alexey Ignatiev (alexey.ignatiev@monash.edu)
-- Brendon Taylor (brendon.taylor@monash.edu)
-- dylan choo 
+- Dylan Choo 30718732 dcho0028@student.monash.edu
 
 ## Setup
 

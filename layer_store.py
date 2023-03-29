@@ -263,7 +263,7 @@ class AdditiveLayerStore(LayerStore):
 
 
          Time comeplexity:
-         O(n^2) this is becaus there seems to be two while loops running
+         O(n^2) where n is the self.layer_list this is because there seems to be two while loops running
          where the while loop iterates thorugh the queue twice to store it into
          the temporary queue one for original and one for special
 
@@ -311,21 +311,45 @@ class SequenceLayerStore(LayerStore):
     - special:
         Of all currently applied layers, remove the one with median `name`.
         In the event of two layers being the median names, pick the lexicographically smaller one.
+
+    Doc :
+    for this part of the layer_store.py there is a use of the arraysorted list
+    so two sorted list is made one is normal and one is for special and as usual
+    there will be self.color = default 0,0,0
+
+
     """
 
     def __init__(self) -> None:
+        """
+        Doc:
+        set the array sorted list to the list names self.layer_list and
+        self.layer_list_special
+        """
         super().__init__()
         self.layer_list = ArraySortedList(max_capacity=100)
         self.layer_list_special = ArraySortedList(max_capacity=100)
         self.color = (0,0,0)
-        self.special_mode = False
-        self.enter_special = 0
+
+
 
 
 
 
 
     def add(self, layer: Layer):
+        """
+        Doc:
+        For this add , if the layer is none it will return none but when layer
+        is not none if will go though a sorted array list and use the add function
+        to add the layer at a certain position using its name and index specify
+        in the layer_util and layer.py file into the arraysortedlist class . With
+        that , if the layer added is the same as the layer that is already added it will
+        return none also which means do nothing
+
+        Time complexity:
+        O(n) as it goes through a loop once for the self,layer_list
+        """
         if layer == None:
             return
         for layer_add in self.layer_list:
@@ -339,13 +363,19 @@ class SequenceLayerStore(LayerStore):
 
     def erase(self, layer: Layer):
         """
-                for layer_erase in self.layer_list:
-            if layer_erase is None:
-                break
-            if layer_erase.value == layer.name and layer_erase.key == layer.index:
-                self.layer_list.remove(layer_erase)
-                self.layer_list.delete_at_index()
-                break
+        Doc:
+        For the erase function what this does is that it goes through the array sorted
+        list(self.layer_list ) and check for any none values as i come up with this
+        error when debugging this as the layer.name and index wont work it is None.
+        so to make up for this if it is none it will do nothing .but if the value (name )
+        and the key(index) is the same it will use the function from the arraysorted class
+        delete at index to remove the layer in the self.layer_list arraysorted list
+        and after that it will resize the arraysorted list as a layer is remove from the
+        sorted list it needs to fill in that gap with none so it resizes it to avoid
+        an error of array list
+
+        Time complexity:
+        O(n) as it goes through a loop once for the self,layer_list
 
 
 
@@ -361,6 +391,33 @@ class SequenceLayerStore(LayerStore):
 
     def special(self):
         """
+        Doc:
+        For this special it will be called from the user then it will activate straight away.
+        For this i decided to set the length of list (arraysortedlist) to apply-lauers
+        as for this part of the seqlayerstore it is needed to take the median of the lexicographycal order layer
+        and remove it . so to do this i split to two if statements one is even and
+        the other is for odd lenght of layers in the list . For the even it will first take
+        median layer index of the list and store it to median index and then i grab
+        the listitem in the sorted array list and store it into a temporary list and
+        then i use the sort function to sort the layers listitem value(name) by its
+        lexicographycal order and store it into sort_layer_name. after that it will go through
+        a for loop in the self.layer_listto check if the j (layer listitem) is not a
+        none value and the j value(name of layer listitem) is the same as the sort_layer_list
+        lexicographical ordered median of the layer and remove it from the sortedarraylist
+        after that it will resize to avoid error . Same goes to the odd length layers
+        it will do the same but this time its for the median layer and there isnt need
+        for a comparison of the median layer and the formula can go like this apply_layers // 2
+        and after that it will remove the median layer in lexicographycal order and resize
+        the sorted array list
+
+        Time complexity:
+        O(n log n) as n is the length of the layer_list for the even layers part
+        the  temp_layer_list that only includes the non-None elements of layer_list,
+        which takes O(n) time, where n is the length of layer_list. It sorts temp_layer_list
+        using the sorted() function with a key function that extracts the value attribute of each
+        layer, which takes O(n log n) time and lastly the check for value in self.layer_list
+        takes O(n) times and the total for the first part is O(n log n) . the same goes to
+        the odd length layers
 
         """
 
@@ -368,6 +425,7 @@ class SequenceLayerStore(LayerStore):
 
         apply_layers = len(self.layer_list)
 
+        #for even length layers
         if apply_layers % 2 == 0:
             median_index = (apply_layers // 2) - 1
             temp_layer_list = [x for x in self.layer_list if x is not None]
@@ -378,7 +436,7 @@ class SequenceLayerStore(LayerStore):
                     self.layer_list._resize()
                     break
 
-
+        #for odd length layers
         else:
             median_index = apply_layers // 2
             temp_layer_list = [x for x in self.layer_list if x is not None]
@@ -392,6 +450,32 @@ class SequenceLayerStore(LayerStore):
 
     def get_color(self, start: tuple[int, int, int], timestamp: int, x: int, y: int) -> tuple[int, int, int]:
         """
+        Doc:
+        For this get_color function , this will be a simple one as the special this
+        time doesnt need to be activate via true or false as the special can be activate
+        on its own by the user . so for this code it will check if the list is empty, if its
+        empty then it will return the start value and if it isnt it will check if the
+        first layer in the list is none if it is break and if is not continue to having the
+        name_layer to be the listitem value which is the name of the layer in string form ,
+        after that it wil go through the layer_util class layers to access all of the layers
+        function to allow the function name to access the .apply function as the .apply
+        function doesnt work when it is a string . so by checking the string of the listitem
+        by its value (name) it will check if its the same . if its the same it will use the laye
+        function name in layer_util.LAyers to call the function like the other get_color
+        functions and at the end it will update the start value fro the next cycle and break
+        the loop of checking for the layer in layer_util.LAYERS and repeat the loop
+        of iterating the self.layer_list array sorted list . lastly it will return the color
+
+        Time complexity:
+        O(nm) where n is the length of the layer_list and m is the number of layers in the
+        layer_util module.If the layer_list is not empty, the code enters a for loop that
+        iterates over the elements of the layer_list. The loop runs n times, where n is the
+        length of the layer_list, so the time complexity of this loop is O(n).
+        Inside the loop, the code extracts the name of the layer from the value attribute
+        of the layer_sort object, which takes O(1) time.The code then enters another for
+        loop that iterates over the layers in the layer_util module. The loop runs m times,
+         where m is the number of layers in the module, so the time complexity of this loop is O(m).
+         Therefore the time complexity is O(nm)
 
         """
 

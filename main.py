@@ -309,6 +309,25 @@ class MyWindow(arcade.Window):
         py: y position of the brush.
 
 
+        Doc:
+        for this code what this does is that it will get the brush side from the
+        grid class and the self.current_action is the paintAction class .after that
+        it will go through two loops one for i and one for j withtin the range of
+        the x and the brush size and the y and the brush size after that it will
+        get the manhattan distance with this formula distance = abs(i - px) + abs(j - py)
+        and check if the brush size is lesser equals than the manhattan distance.
+        after that it will go through the if statement of checking if the draw_style
+        is ts the right one or not and then it will add the layer according to the
+        grid x,y and then it will store the i,j index with the layer into step with the
+        calling of the class paintstep and add the step to get the action .Lastly
+        once the loop is done it will put the action intooo the undo tracker and the
+        replay tracker independently
+
+        time complexity:
+        O(n^2) where n is the brush size
+         This is because the code iterates over all cells within the square of side
+         length 2*brush_size centered at the given coordinates (px, py). The number
+         of cells within this square is proportional to brush_size^2
 
         """
 
@@ -342,20 +361,51 @@ class MyWindow(arcade.Window):
 
 
     def on_undo(self):
-        """Called when an undo is requested."""
+        """Called when an undo is requested.
+
+        Doc:
+        store the action from redo_tracker class using function undo()
+        and return the action
+        """
         action = self.undo_tracker.undo(self.grid)
         if action is not None:
             return action
 
 
     def on_redo(self):
-        """Called when a redo is requested."""
+        """Called when a redo is requested.
+
+        Doc:
+        store the action from undo_tracker class using function redo()
+        and return the action
+        """
         action = self.undo_tracker.redo(self.grid)
         if action is not None:
             return action
 
     def on_special(self):
-        """Called when the special action is requested."""
+        """Called when the special action is requested.
+
+        Doc:
+        for the special it does the same as the on paint as it also go to grid class
+        and get the special function
+        grid class and the self.current_action is the paintAction class .after that
+        it will go through two loops one for i and one for j withtin the range of
+        the x  and the y after that it will
+        get the manhattan distance with this formula distance = abs(i - px) + abs(j - py)
+        and check if the brush size is lesser equals than the manhattan distance.
+        after that it will go through the if statement of checking if the draw_style
+        is ts the right one or not and then it will add the layer according to the
+        grid x,y and then it will store the i,j index with the layer into step with the
+        calling of the class paintstep and add the step to get the action .Lastly
+        once the loop is done it will put the action intooo the undo tracker and the
+        replay tracker independently
+
+        Time complexity:
+        O(n^2) where n is the length of the one of the grid
+        This is because the code iterates over all cells in the grid, which has n^2 cells in total.
+        as one for x and one for y
+        """
         layer = self.grid.special()
         self.current_action = PaintAction()
 
@@ -389,9 +439,14 @@ class MyWindow(arcade.Window):
         """
         Called when the next step of the replay is requested.
         Returns whether the replay is finished.
+
+        Doc:
+        it will check if the replay is done and ready to start the next one
+        by returning true and false (not finish)
         """
         if self.replay_tracker.play_next_action(self.grid):
-            self.replay_tracker.start_replay()
+            self.on_replay_start()
+            #self.replay_tracker.start_replay()
             return True
         return False
 
