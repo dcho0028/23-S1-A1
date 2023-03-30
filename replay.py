@@ -29,7 +29,7 @@ class ReplayTracker:
         not if its true clear the queue
 
         time complexity:
-        O(1) its a simple increment
+        O(1) it is a simple increment
 
 
         """
